@@ -6,6 +6,8 @@ class TarefaController {
 
     static scaffold = Tarefa
 
+    def tarefasFiltradas
+
     def index(){}
 
     def save(){
@@ -29,6 +31,7 @@ class TarefaController {
                 id: tarefa.id,
                 titulo: tarefa.titulo,
                 texto: tarefa.texto,
+                usuario: tarefa.usuarioAbertura,
                 usuarioAbertura: tarefa.usuarioAbertura.id,
                 usuarioResponsavel: tarefa.usuarioResponsavel?.id,
                 dataLimite: tarefa.dataLimite.format("dd/MM/yyyy"),
@@ -38,23 +41,99 @@ class TarefaController {
         ] as JSON)
     }
 
+    def showTarefaLog(){
+        Tarefa tarefa = Tarefa.get(params.id)
+        render([
+                id: tarefa.id,
+                titulo: tarefa.titulo,
+                texto: tarefa.texto,
+                usuarioAbertura: tarefa.usuarioAbertura.email,
+                usuarioResponsavel: tarefa.usuarioResponsavel?.email,
+                dataLimite: tarefa.dataLimite.format("dd/MM/yyyy"),
+                tipoTarefa: tarefa.tipoTarefa.descricao,
+                statusTarefa: tarefa.statusTarefa.descricao,
+                porcentagem: tarefa.porcentagem
+        ] as JSON)
+    }
+
     def list(){
         def retorno = []
 
-        Tarefa.list().each {
-            retorno.add([
-                id: it.id,
-                titulo: it.titulo,
-                usuarioAbertura: it.usuarioAbertura.email,
-                usuarioResponsavel: it.usuarioResponsavel?.email,
-                dataLimite: it.dataLimite.format("dd/MM/yyyy"),
-                tipoTarefa: it.tipoTarefa.descricao,
-                statusTarefa: it.statusTarefa.name(),
-                porcentagem: it.porcentagem
-            ])
+        if(tarefasFiltradas)
+            tarefasFiltradas.each {
+                retorno.add([
+                        id: it.id,
+                        titulo: it.titulo,
+                        usuarioAbertura: it.usuarioAbertura.email,
+                        usuario: it.usuarioAbertura,
+                        usuarioResponsavel: it.usuarioResponsavel?.email,
+                        dataLimite: it.dataLimite.format("dd/MM/yyyy"),
+                        tipoTarefa: it.tipoTarefa.descricao,
+                        statusTarefa: it.statusTarefa.name(),
+                        porcentagem: it.porcentagem
+                ])
+            }
+        else {
+            Tarefa.list().each {
+                retorno.add([
+                        id                : it.id,
+                        titulo            : it.titulo,
+                        usuarioAbertura   : it.usuarioAbertura.email,
+                        usuario           : it.usuarioAbertura,
+                        usuarioResponsavel: it.usuarioResponsavel?.email,
+                        dataLimite        : it.dataLimite.format("dd/MM/yyyy"),
+                        tipoTarefa        : it.tipoTarefa.descricao,
+                        statusTarefa      : it.statusTarefa.name(),
+                        porcentagem       : it.porcentagem
+                ])
+            }
+        }
+        render retorno as JSON
+    }
+
+    def filter() {
+        log.info("Iniciando buscar por filtros.")
+
+        def tarefaList =  Tarefa.withCriteria(){
+            ilike('titulo', '%' + params["titulo"] + '%')
         }
 
-        render retorno as JSON
+        tarefasFiltradas = tarefaList
+
+        render view: "index", model: tarefaList
+
+    }
+
+    private getFilterList(params) {
+
+        def queryParams = [:]
+
+        if(params["titulo"]) {
+            queryParams.put("titulo", params["titulo"])
+        }
+
+        if(params["description"]) {
+            queryParams.put("description", params["description"])
+
+        }
+
+        if(params["typeDescription"]) {
+            queryParams.put("typeDescription", params["typeDescription"])
+        }
+
+        if(params["startDate"]) {
+            queryParams.put("startDate", params["startDate"])
+        }
+
+        if (params["endDate"]) {
+            queryParams.put("endDate", params["endDate"])
+        }
+
+        if(params["active"]) {
+            queryParams.put("active", new Boolean(params["active"]))
+        }
+
+        queryParams
     }
 
     def update(){

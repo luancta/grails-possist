@@ -3,7 +3,7 @@
     <label for="titulo" class="col-sm-2 control-label">Titulo</label>
     <div class="col-sm-10">
         <g:textField name="titulo" class="form-control" v-model="tarefa.titulo"/>
-    </div>
+</div>
 </div>
 <div class="form-group">
     <label for="texto" class="col-sm-2 control-label">Texto</label>
@@ -48,6 +48,6 @@
 <div class="form-group">
     <label for="porcentagem" class="col-sm-2 control-label">Porcentagem</label>
     <div class="col-sm-10">
-        <g:field type="number" name="porcentagem" class="form-control" v-model="tarefa.porcentagem"/>
+        <g:select name="porcentagem," from="${0..100}" v-model="tarefa.porcentagem"/>
     </div>
 </div>
